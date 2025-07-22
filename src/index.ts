@@ -156,12 +156,13 @@ function createRow(
     VERTICAL +
     columnWidths
       .map((columnWidth, i) => {
+      	const diff = columnWidth - stringWidth(cells[i]) - ' '.length;
         if (horizontalAlignment === 'left') {
-          return (' ' + cells[i]).padEnd(columnWidth, ' ');
+          return ' ' + cells[i] + ' '.repeat(diff>0 ? diff : 0);
         } else if (horizontalAlignment === 'right') {
           return (cells[i] + ' ').padStart(columnWidth, ' ');
         } else {
-          return centerText(cells[i], columnWidth);
+          return ' '.repeat(diff>0 ? diff : 0) + cells[i] + ' ';
         }
       })
       .join(VERTICAL) +
