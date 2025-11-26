@@ -4,6 +4,7 @@ import stringWidth from 'string-width';
 export type HorizontalAlignment = 'left' | 'middle' | 'right';
 export type VerticalAlignment = 'top' | 'middle' | 'bottom';
 export type ColumnSizing = 'stretch' | 'even';
+export type Templates = 'DCcentered' | 'genericData' | 'quadrants';
 
 export type TableOptions = {
   maxWidth: number;
@@ -14,6 +15,9 @@ export type TableOptions = {
   throwIfTooSmall: boolean;
   indexColumn: boolean;
   stringify: (value: unknown) => string;
+  highlight: (value: unknown) => string;
+  template: Templates;
+  cornerText: string;
 };
 
 export function createTable<T extends object>(
@@ -28,15 +32,59 @@ export function createTable<T extends object>(
     indexColumn = false,
     throwIfTooSmall = true,
     stringify = String,
+    highlight = String,
+    template = 'genericData',
+    cornerText = '#',
   }: Partial<TableOptions> = {},
 ): string {
   let columnCount = keys.length;
-  const columnNames = keys.map((key) => stringify(key));
-  const tableContent = items.map((item) => keys.map((key) => stringify(item[key])));
+  const columnNames = keys.map((key) => {
+    if (template === 'quadrants') {  // Column indices for template quadrants
+      if (keys.length % 2 !== 0) {
+        throw new Error('The number of column indices mus be even when template is quadrant');
+      } else {
+        return stringify(Number(key) % (keys.length/2));
+      }
+    } else {
+      return stringify(key);
+    }
+  });
+  const DCposition = [
+    items.length % 2 === 0 ? items.length/2 -1 : Math.floor(items.length/2),
+    keys.length % 2 === 0  ? keys.length/2 -1  : Math.floor(keys.length/2), 
+  ];
+  const tableContent = items.map((item, index1) => keys.map((key, index2) => {
+    if (template === 'DCcentered') {  // Formatting for DC-centered transforms
+      // If last row in even number of rows , or last column in even number of columns (non-mirrored values; special)
+      if (
+        ((index1 === items.length-1) && (items.length % 2 === 0))
+        ||
+        ((index2 === keys.length-1) && (keys.length % 2 === 0))
+        ) {
+        return highlight(item[key]);
+      } else if (index1 === DCposition[0] && index2 == DCposition[1]) {  // DC value
+        return highlight(item[key]);
+      } else {
+        return stringify(item[key]);
+      }
+    } else {  // No special template
+      return stringify(item[key]);
+    }
+  }));
 
   if (indexColumn) {
-    columnNames.unshift('(index)');
-    tableContent.forEach((row, i) => row.unshift(i.toString()));
+    columnNames.unshift(cornerText);
+    tableContent.forEach((row, i) => {
+      if (template === 'quadrants') {  // Row indices for template quadrants
+        if (tableContent.length % 2 !== 0) {
+          throw new Error('The number of row indices mus be even when template is quadrant');
+        } else {
+          return row.unshift((i % (tableContent.length/2)).toString());
+        }
+      } else {
+        return row.unshift(i.toString());
+      }      
+    });
     columnCount++;
   }
 
@@ -156,13 +204,13 @@ function createRow(
     VERTICAL +
     columnWidths
       .map((columnWidth, i) => {
-      	const diff = columnWidth - stringWidth(cells[i]) - ' '.length;
+        const diff = columnWidth - stringWidth(cells[i]) - ' '.length;
         if (horizontalAlignment === 'left') {
           return ' ' + cells[i] + ' '.repeat(diff>0 ? diff : 0);
         } else if (horizontalAlignment === 'right') {
-          return (cells[i] + ' ').padStart(columnWidth, ' ');
-        } else {
           return ' '.repeat(diff>0 ? diff : 0) + cells[i] + ' ';
+        } else {
+          return centerText(cells[i], columnWidth);
         }
       })
       .join(VERTICAL) +
@@ -183,9 +231,9 @@ function createMultiLineRows(
   for (let i = 0; i < columnWidths.length; i++) {
     const columnWidth = columnWidths[i];
     const cellLines = wrapAnsi(row[i], columnWidth - 2, {
-      hard: true,
-      trim: true,
-      wordWrap: true,
+      hard: false,
+      trim: false,
+      wordWrap: false,
     }).split('\n');
     cells.push(cellLines);
     rowHeight = Math.max(rowHeight, cellLines.length);
