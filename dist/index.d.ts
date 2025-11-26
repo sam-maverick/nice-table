@@ -1,7 +1,7 @@
-export declare type HorizontalAlignment = 'left' | 'middle' | 'right';
-export declare type VerticalAlignment = 'top' | 'middle' | 'bottom';
-export declare type ColumnSizing = 'stretch' | 'even';
-export declare type TableOptions = {
+export type HorizontalAlignment = 'left' | 'middle' | 'right';
+export type VerticalAlignment = 'top' | 'middle' | 'bottom';
+export type ColumnSizing = 'stretch' | 'even';
+export type TableOptions = {
     maxWidth: number;
     columnSizing: ColumnSizing;
     horizontalAlignment: HorizontalAlignment;
