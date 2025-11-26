@@ -2,4 +2,3 @@ upstream_push.sh
 /.idea
 /.vscode
 /node_modules
-/dist
