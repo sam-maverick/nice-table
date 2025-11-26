@@ -11,5 +11,8 @@
     "declaration": true,
     "sourceMap": true,
     "typeRoots": ["./node_modules/@types", "./types"]
-  }
+  },
+  "include": [
+    "src"
+  ]
 }
