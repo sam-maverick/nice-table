@@ -1,5 +1,5 @@
 # nice-table
-A non-overflowing `console.table` alternative with customization options.
+A non-overflowing `console.table` alternative with customization options. This project is a fork of https://github.com/timvandam/nice-table, where issue [#1](https://github.com/timvandam/nice-table/issues/1) is fixed.
 
 ## Usage
 ```ts
